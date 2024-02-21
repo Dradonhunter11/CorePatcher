@@ -1,0 +1,8 @@
+Simple mod that allow easy assembly patching for terraria. 
+This is not begineer friendly, it will require you to know how to do advanced IL editing.
+
+This also will write on your disk the written assembly as "tModLoader.patched.dll".
+Any harm caused by other mods using this mod is not my responsability but the responsability of you and the mods doing the harm.
+
+Strongly recommend reading this and practicing IL before using this:
+https://github.com/tModLoader/tModLoader/wiki/Expert-IL-Editing

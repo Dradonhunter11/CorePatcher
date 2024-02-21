@@ -1,0 +1,3 @@
+displayName = Assembly Core patcher
+author = Dradonhunter
+version = 0.1
