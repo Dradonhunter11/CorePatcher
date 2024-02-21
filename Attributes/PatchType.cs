@@ -5,13 +5,13 @@ namespace CorePatcher.Attributes
     [System.AttributeUsage(AttributeTargets.Class)]
     public class PatchType : System.Attribute
     {
-        private string FullTypeName;
+        private string _fullTypeName;
 
         public PatchType(string fullTypeName)
         {
-            FullTypeName = fullTypeName;
+            _fullTypeName = fullTypeName;
         }
 
-        public string GetTypeName() { return FullTypeName; }
+        public string GetTypeName() { return _fullTypeName; }
     }
 }

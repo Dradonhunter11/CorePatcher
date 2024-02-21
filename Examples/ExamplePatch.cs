@@ -8,7 +8,7 @@ using System.Linq;
 namespace CorePatcher.Exemples
 {
     [PatchType("Terraria.Main")]
-    internal class ExemplePatch : ModCorePatch
+    internal class ExamplePatch : ModCorePatch
     {
         /// <summary>
         /// This patch will edit the title window of the game
