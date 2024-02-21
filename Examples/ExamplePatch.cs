@@ -4,6 +4,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System.Collections.Generic;
 using System.Linq;
+using CorePatcher.Examples;
 
 namespace CorePatcher.Exemples
 {
@@ -34,6 +35,27 @@ namespace CorePatcher.Exemples
             ilCursor.EmitLdarg0();
             ilCursor.Emit(OpCodes.Ldstr, "Terraria Exemple Core modding!");
             ilCursor.EmitStfld(type.Fields.FirstOrDefault(f => f.Name == "_cachedTitle"));
+        }
+
+        /// <summary>
+        /// This patch inject a new string field into Main.cs called myInjectedField
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="terraria"></param>
+        private static void InjectField(TypeDefinition type, AssemblyDefinition terraria)
+        {
+            // Get the static constructor
+            MethodDefinition staticConstructor = type.Methods.FirstOrDefault(m => m.Name == ".cctor");
+
+            // We then get a TypeReference of string
+            TypeReference stringTypeReference = terraria.MainModule.TypeSystem.String;
+
+            // Create a new FieldDefinition that is static and public
+            var fieldDefinition = new FieldDefinition("MyInjectedField", Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static, stringTypeReference);
+            // Add the field to the class
+            type.Fields.Add(fieldDefinition);
+            // Then set the value of the string
+            Helper.EditStaticFieldString(fieldDefinition, "Hello core modding!");
         }
     }
 }
