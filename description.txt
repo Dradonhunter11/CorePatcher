@@ -1,8 +1,19 @@
-Simple mod that allow easy assembly patching for terraria. 
-This is not begineer friendly, it will require you to know how to do advanced IL editing.
+A simple mod that allows easy assembly patching for Terraria. 
+Originally was part of my Infinite world mod, I decided to make this a proper library instead.
+This is not beginner friendly; it will require you to know how to do advanced IL editing.
 
-This also will write on your disk the written assembly as "tModLoader.patched.dll".
-Any harm caused by other mods using this mod is not my responsability but the responsability of you and the mods doing the harm.
+This also will write to your disk the patched assembly as "tModLoader.patched.dll".
+Any harm caused by other mods using this mod is not my responsibility, but the responsibility of you and the mods doing the harm.
+
+Once the patching is done, go in your Steam folder and rename "tModLoader.patched.dll" to "tModloader.dll", and check if your change applied properly with ILSpy.
+Automatically reloading the game will be added later.
 
 Strongly recommend reading this and practicing IL before using this:
 https://github.com/tModLoader/tModLoader/wiki/Expert-IL-Editing
+
+Wiki on how to use this will come soon. For now, check the example provided here:
+https://github.com/Dradonhunter11/CorePatcher/blob/master/Examples/ExamplePatch.cs
+
+Features to come:
+- Allow dependency injection (while this is technically possible, "tModLoader.deps.json" still needs to be edited to launch the game properly).
+- Automatically restart the game once the patching is done.
