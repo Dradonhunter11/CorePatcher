@@ -11,6 +11,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Terraria;
 using Terraria.ModLoader;
+using Terraria.Utilities;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace CorePatcher
@@ -185,7 +186,20 @@ namespace CorePatcher
             }
             process.Start();
             Thread.Sleep(1000);
-            Environment.Exit(0);
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                MethodInfo quitGame = typeof(Main).GetMethod("QuitGame", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (quitGame != null)
+                {
+                    quitGame.Invoke(Main.instance, new object[] { });
+
+                }
+                Environment.Exit(0);
+            }
+            else
+            {
+                Environment.Exit(0);
+            }
         }
     }
 
