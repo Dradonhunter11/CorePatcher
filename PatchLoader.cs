@@ -162,28 +162,11 @@ namespace CorePatcher
             {
                 return;
             }
-            Process process;
-            switch (Environment.OSVersion.Platform)
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo("dotnet", "\"tModLoader.patched.dll\"")
             {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.WinCE:
-                    process = new Process();
-                    process.StartInfo = new ProcessStartInfo("dotnet.exe", "\"tModLoader.patched.dll\"")
-                    {
-                        WorkingDirectory = Environment.CurrentDirectory,
-                        UseShellExecute = true
-                    };
-                    break;
-                default:
-                    process = new Process();
-                    process.StartInfo = new ProcessStartInfo("dotnet", "\"tModLoader.patched.dll\"")
-                    {
-                        WorkingDirectory = Environment.CurrentDirectory
-                    };
-                    break;
-            }
+                WorkingDirectory = Environment.CurrentDirectory
+            };
             process.Start();
             Thread.Sleep(1000);
             if (Environment.OSVersion.Platform == PlatformID.MacOSX)

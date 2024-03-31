@@ -1,1 +1,16 @@
+Configs: {
+	ExamplePatchConfig: {
+		DisplayName: Example Patch Config
+		Headers.Patch: Patch Header
 
+		EnableExamplePatch: {
+			Label: Enable Example Patch
+			Tooltip: ""
+		}
+
+		ReloadUponPatching: {
+			Label: Reload Upon Patching
+			Tooltip: ""
+		}
+	}
+}

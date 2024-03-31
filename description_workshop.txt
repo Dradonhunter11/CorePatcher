@@ -27,6 +27,7 @@ v.1.1
 - Game reload upon patching (configurable)
 - Toggle for example patch
 - Added a patch that edit the title at the bottom left corner to indicate if the game was patched
+[img]https://i.imgur.com/B7ppBvG.png[/img]
 - Added mac and linux support
 
 Features to come:
