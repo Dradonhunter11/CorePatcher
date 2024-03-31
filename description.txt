@@ -14,6 +14,24 @@ https://github.com/tModLoader/tModLoader/wiki/Expert-IL-Editing
 Wiki on how to use this will come soon. For now, check the example provided here:
 https://github.com/Dradonhunter11/CorePatcher/blob/master/Examples/ExamplePatch.cs
 
+DO NOTE AFTER USING THIS MOD POST 1.1 YOUR GAME WILL RESTART ONCE THE PATCHING IS DONE, THIS CAN BE TOGGLED
+
+Please note that after using this mod post 1.1, your game will restart once the patching is done. This feature can be toggled.
+
+v.1.0
+- Initial release
+- ModCorePatch class
+- Example patch
+
+v.1.1
+- Game reload upon patching (configurable)
+- Toggle for example patch
+- Added a patch that edit the title at the bottom left corner to indicate if the game was patched
+[img]https://i.imgur.com/B7ppBvG.png[/img]
+- Added mac and linux support
+
 Features to come:
-- Allow dependency injection (while this is technically possible, "tModLoader.deps.json" still needs to be edited to launch the game properly).
-- Automatically restart the game once the patching is done.
+- Allow dependency injection (while this is technically possible, "tModLoader.deps.json" still needs to be edited to launch the game properly, 
+partially implemented just to make the game work).
+- Server executable patching
+- Make it self removable once the game is closed
