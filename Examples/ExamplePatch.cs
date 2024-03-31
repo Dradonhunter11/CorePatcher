@@ -4,7 +4,9 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System.Collections.Generic;
 using System.Linq;
+using CorePatcher.Configs;
 using CorePatcher.Examples;
+using Terraria.ModLoader;
 
 namespace CorePatcher.Exemples
 {
@@ -18,6 +20,11 @@ namespace CorePatcher.Exemples
         /// <param name="terraria"></param>
         private static void PatchTitle(TypeDefinition type, AssemblyDefinition terraria)
         {
+            if (!ModContent.GetInstance<ExamplePatchConfig>().EnableExamplePatch)
+            {
+                return;
+            }
+
             // First we get the setTitle method from Main.cs
             var method = type.Methods.FirstOrDefault(m => m.Name == "SetTitle");
 
@@ -44,6 +51,11 @@ namespace CorePatcher.Exemples
         /// <param name="terraria"></param>
         private static void InjectField(TypeDefinition type, AssemblyDefinition terraria)
         {
+            if (!ModContent.GetInstance<ExamplePatchConfig>().EnableExamplePatch)
+            {
+                return;
+            }
+
             // Get the static constructor
             MethodDefinition staticConstructor = type.Methods.FirstOrDefault(m => m.Name == ".cctor");
 

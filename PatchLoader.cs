@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using CorePatcher.Attributes;
+using CorePatcher.Configs;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Terraria;
 using Terraria.ModLoader;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace CorePatcher
 {
@@ -51,12 +56,12 @@ namespace CorePatcher
 
         internal static void Apply()
         {
-            if (typeof(Main).Assembly.GetName().Version == new Version(2, 0, 0, 0))
+            if (DetectPatchedAssembly())
             {
                 return;
             }
 
-            var currentFile = Path.Combine(Environment.CurrentDirectory, "tmodloader.dll");
+            var currentFile = Path.Combine(Environment.CurrentDirectory, "tModLoader.dll");
             var newFile = Path.Combine(Environment.CurrentDirectory, "tmodloader2.dll");
             if (File.Exists(newFile))
             {
@@ -98,13 +103,141 @@ namespace CorePatcher
                 }
             }
 
-            terrariaAssembly.Name.Version = new Version(2, 0, 0, 0);
             // Write the patched assembly
-            terrariaAssembly.Write(Path.ChangeExtension(Path.Combine(Environment.CurrentDirectory, "tmodloader.dll"), ".patched.dll"));
+            terrariaAssembly.Write(Path.ChangeExtension(Path.Combine(Environment.CurrentDirectory, "tModLoader.dll"), ".patched.dll"));
             if (File.Exists(newFile))
             {
                 File.Delete(newFile);
             }
+
+            CopyRuntimeConfig();
+
+            Restart();
+        }
+
+        private static bool DetectPatchedAssembly()
+        {
+            FieldInfo CorePatchedFieldInfo =
+                typeof(Main).GetField("CorePatched", BindingFlags.Public | BindingFlags.Static);
+            return CorePatchedFieldInfo != null;
+        }
+
+        /// <summary>
+        /// TODO: Find a way to execute this after the game has exited, maybe a batch script? 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void DeleteOnceDone(object sender, EventArgs e)
+        {
+            if (DetectPatchedAssembly())
+            {
+                string runtimeConfigPath = Path.Combine(Environment.CurrentDirectory, "tModLoader.runtimeconfig.json");
+                string runtimeConfigDev = Path.Combine(Environment.CurrentDirectory, "tModLoader.runtimeconfig.dev.json");
+                if (File.Exists(runtimeConfigPath))
+                {
+
+                    File.Delete(Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.json"));
+                    File.Delete(Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.dev.json"));
+                }
+            }
+        }
+
+        private static void CopyRuntimeConfig()
+        {
+            string runtimeConfigPath = Path.Combine(Environment.CurrentDirectory, "tModLoader.runtimeconfig.json");
+            string runtimeConfigDev = Path.Combine(Environment.CurrentDirectory, "tModLoader.runtimeconfig.dev.json");
+            if (File.Exists(runtimeConfigPath))
+            {
+                
+                File.Copy(runtimeConfigPath, Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.json"), true);
+                File.Copy(runtimeConfigDev, Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.dev.json"), true);
+                PatchDepsEditing.PatchTargetRuntime();
+            }
+        }
+
+        private static void Restart()
+        {
+            if (!ModContent.GetInstance<ExamplePatchConfig>().ReloadUponPatching)
+            {
+                return;
+            }
+            Process process;
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    process = new Process();
+                    process.StartInfo = new ProcessStartInfo("dotnet.exe", "\"tModLoader.patched.dll\"")
+                    {
+                        WorkingDirectory = Environment.CurrentDirectory,
+                        UseShellExecute = true
+                    };
+                    break;
+                default:
+                    process = new Process();
+                    process.StartInfo = new ProcessStartInfo("dotnet", "\"tModLoader.patched.dll\"")
+                    {
+                        WorkingDirectory = Environment.CurrentDirectory
+                    };
+                    break;
+            }
+            process.Start();
+            Thread.Sleep(1000);
+            Environment.Exit(0);
+        }
+    }
+
+    [PatchType("Terraria.Main")]
+    internal class MainMenuPatch : ModCorePatch
+    {
+        /// <summary>
+        /// Patch the string version at the bottom left of the screen
+        /// Mainly just to be able to tell if the patching was a success
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="terraria"></param>
+        private static void ModifyVersionStringDefault(TypeDefinition type, AssemblyDefinition terraria)
+        {
+            MethodDefinition staticConstructor = type.Methods.FirstOrDefault(m => m.Name == ".cctor");
+
+
+            if (staticConstructor == null)
+            {
+                staticConstructor = new MethodDefinition(".cctor", Mono.Cecil.MethodAttributes.Static | Mono.Cecil.MethodAttributes.Private | Mono.Cecil.MethodAttributes.HideBySig | Mono.Cecil.MethodAttributes.SpecialName | Mono.Cecil.MethodAttributes.RTSpecialName, terraria.MainModule.TypeSystem.Void);
+                type.Methods.Add(staticConstructor);
+            }
+
+
+            EditStaticFieldString(type.Fields.FirstOrDefault(p => p.Name == "versionNumber"), "v1.4.4.9 - Core patcher");
+            EditStaticFieldString(type.Fields.FirstOrDefault(p => p.Name == "versionNumber2"), "v1.4.4.9 - Core patcher");
+        }
+
+        private static void EditStaticFieldString(FieldDefinition definition, string value)
+        {
+            MethodDefinition staticConstructor = definition.DeclaringType.Methods.FirstOrDefault(m => m.Name == ".cctor");
+
+            if (staticConstructor != null)
+            {
+                ILProcessor processor = staticConstructor.Body.GetILProcessor();
+
+                IList<Instruction> instructions = new List<Instruction>();
+                instructions.Add(processor.Create(OpCodes.Ldstr, value));
+                instructions.Add(processor.Create(OpCodes.Stsfld, definition));
+                foreach (Instruction instruction in instructions)
+                {
+                    processor.Body.Instructions.Insert(processor.Body.Instructions.Count - 2, instruction);
+                }
+            }
+        }
+
+        // Lazy way to do thing 
+        private static void AddDetectionField(TypeDefinition type, AssemblyDefinition terraria)
+        {
+            FieldDefinition definition =
+                new FieldDefinition("CorePatched", FieldAttributes.Public | FieldAttributes.Static, type.Module.TypeSystem.Boolean);
+            type.Fields.Add(definition);
         }
     }
 }

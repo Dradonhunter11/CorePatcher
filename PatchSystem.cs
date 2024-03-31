@@ -1,4 +1,6 @@
-﻿using Terraria.ModLoader;
+﻿using System;
+using System.Diagnostics;
+using Terraria.ModLoader;
 
 namespace CorePatcher
 {
