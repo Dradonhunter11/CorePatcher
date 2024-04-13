@@ -97,15 +97,9 @@ namespace CorePatcher
             string name = asmInfo.Name.Name;
             string nameVersion = name + "/" + version;
 
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine("{");
-            builder.AppendLine("\"runtime\": {");
-            builder.AppendLine("\"" + name + ".dll\": {}");
-            builder.AppendLine("}");
-            builder.AppendLine("}");
-
-            JObject newObject = JObject.Parse(builder.ToString());
-            token[nameVersion] = newObject;
+            token[nameVersion] = new JObject();
+            token[nameVersion]["runtime"] = new JObject();
+            token[nameVersion]["runtime"][name + ".dll"] = new JObject();
         }
 
         private static void InjectIntoLibraries(JToken token, AssemblyDefinition asmInfo)
