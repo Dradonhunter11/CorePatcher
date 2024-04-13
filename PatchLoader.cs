@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using CorePatcher.Attributes;
 using CorePatcher.Configs;
+using log4net;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Terraria;
@@ -32,6 +33,11 @@ namespace CorePatcher
         public static void RegisterPostPatchOperation(Action postPatch)
         {
             _postPatchList.Add(postPatch);
+        }
+
+        public static void AddDeps(AssemblyDefinition asmInfo)
+        {
+            PatchDepsEditing.AddDependency(asmInfo);
         }
 
         public void Register(ModCorePatch patch)

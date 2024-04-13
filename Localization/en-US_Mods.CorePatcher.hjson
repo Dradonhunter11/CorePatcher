@@ -1,7 +1,7 @@
 Configs: {
 	ExamplePatchConfig: {
-		DisplayName: Example Patch Config
-		Headers.Patch: Patch Header
+		DisplayName: Patch Config
+		Headers.Patch: Patching Config
 
 		EnableExamplePatch: {
 			Label: Enable Example Patch
