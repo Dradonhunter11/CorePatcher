@@ -30,6 +30,11 @@ v.1.1
 [img]https://i.imgur.com/B7ppBvG.png[/img]
 - Added mac and linux support
 
+v.1.2
+- Allow dependency injection
+Example on how to do dependency injection
+[img]https://i.imgur.com/sk42WPL.png[/img]
+
 Features to come:
 - Allow dependency injection (while this is technically possible, "tModLoader.deps.json" still needs to be edited to launch the game properly, 
 partially implemented just to make the game work).

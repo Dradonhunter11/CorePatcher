@@ -29,8 +29,9 @@ v.1.1
 - Added a patch that edit the title at the bottom left corner to indicate if the game was patched
 - Added mac and linux support
 
+v.1.2
+- Allow dependency injection
+
 Features to come:
-- Allow dependency injection (while this is technically possible, "tModLoader.deps.json" still needs to be edited to launch the game properly, 
-partially implemented just to make the game work).
 - Server executable patching
 - Make it self removable once the game is closed
