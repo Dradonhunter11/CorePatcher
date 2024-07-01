@@ -1,7 +1,7 @@
 ﻿using System;
 using Terraria.ModLoader;
 
-namespace CorePatcher
+namespace CorePatcher 
 {
     public class ModCorePatch : ModType
     {

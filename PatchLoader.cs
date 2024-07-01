@@ -4,14 +4,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using CorePatcher.Attributes;
 using CorePatcher.Configs;
 using log4net;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using Terraria;
 using Terraria.ModLoader;
+using Terraria.ModLoader.UI;
 using Terraria.Utilities;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 
@@ -89,7 +92,7 @@ namespace CorePatcher
                 if (attribute != null)
                 {
                     var typeName = ((PatchType)attribute).GetTypeName();
-                    var methods = modCorePatch.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                    var methods = modCorePatch.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                     foreach (var methodInfo in methods)
                     {
                         var @params = methodInfo.GetParameters();
@@ -122,7 +125,7 @@ namespace CorePatcher
             Restart();
         }
 
-        private static bool DetectPatchedAssembly()
+        public static bool DetectPatchedAssembly()
         {
             FieldInfo CorePatchedFieldInfo =
                 typeof(Main).GetField("CorePatched", BindingFlags.Public | BindingFlags.Static);
@@ -155,7 +158,7 @@ namespace CorePatcher
             string runtimeConfigDev = Path.Combine(Environment.CurrentDirectory, "tModLoader.runtimeconfig.dev.json");
             if (File.Exists(runtimeConfigPath))
             {
-                
+
                 File.Copy(runtimeConfigPath, Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.json"), true);
                 File.Copy(runtimeConfigDev, Path.Combine(Environment.CurrentDirectory, "tModLoader.patched.runtimeconfig.dev.json"), true);
                 PatchDepsEditing.PatchTargetRuntime();
@@ -164,7 +167,7 @@ namespace CorePatcher
 
         private static void Restart()
         {
-            if (!ModContent.GetInstance<ExamplePatchConfig>().ReloadUponPatching)
+            if (!ModContent.GetInstance<CorePatcherConfig>().ReloadUponPatching)
             {
                 return;
             }
@@ -190,6 +193,105 @@ namespace CorePatcher
                 Environment.Exit(0);
             }
         }
+    }
+
+    [PatchType("Terraria.ModLoader.UI.Interface")]
+    internal class InterfacePatch : ModCorePatch
+    {
+        private static void ModifyModLoaderMenus(TypeDefinition type, AssemblyDefinition terraria)
+        {
+            FieldDefinition definition =
+            new FieldDefinition("CorePatched", FieldAttributes.Public | FieldAttributes.Static, type.Module.TypeSystem.Boolean);
+            var main = terraria.MainModule.Types.First(i => i.FullName == "Terraria.Main").Fields;
+            main.Add(definition);
+            EditStaticFieldString(definition);
+
+            if (!ModContent.GetInstance<CorePatcherConfig>().DevMode) return;
+
+            FieldReference infoMessage = terraria.MainModule.Types.First(i => i.FullName == "Terraria.ModLoader.UI.Interface").Fields.First(i => i.Name == "infoMessage");
+            FieldReference menuMode = terraria.MainModule.Types.First(i => i.FullName == "Terraria.Main").Fields.First(i => i.Name == "menuMode");
+
+            FieldReference corePatcher = terraria.MainModule.Types.First(i => i.FullName == "Terraria.Main").Fields.FirstOrDefault(i => i.Name == "CorePatched");
+
+            MethodReference show = terraria.MainModule.Types.First(i => i.FullName == "Terraria.ModLoader.UI.UIInfoMessage").Methods.First(i => i.Name == "Show");
+
+            var method = type.Methods.First(i => i.Name == "ModLoaderMenus");
+
+            var instructions = method.Body.GetILProcessor().Body.Instructions;
+
+            ILContext context = new ILContext(method);
+            ILCursor cursor = new ILCursor(context);
+            
+            Instruction target = cursor.Instrs[cursor.Index + 3];
+            Instruction target2 = cursor.Instrs[2];
+            instructions.Insert(3, Instruction.Create(OpCodes.Brtrue, target));
+            instructions.Insert(3, Instruction.Create(OpCodes.Ldsfld, corePatcher));
+
+            Instruction instruction = Instruction.Create(OpCodes.Br, (Instruction)target2.Operand);
+
+            cursor.Index += 5;
+
+            cursor.EmitLdcI4(1);
+            cursor.EmitStsfld(corePatcher);
+
+            cursor.Emit(OpCodes.Ldsfld, infoMessage);
+            cursor.EmitLdstr(BuildMessage());
+            cursor.EmitLdsfld(menuMode); 
+            cursor.EmitLdnull();
+            cursor.EmitLdstr("");
+            cursor.EmitLdnull();
+            cursor.EmitLdnull();
+            cursor.EmitCallvirt(show);
+
+            instructions.Insert(cursor.Index, instruction);
+        }
+
+        private static string BuildMessage()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("Welcome to tModLoader - Core patcher dev mode!");
+            builder.AppendLine("If you see this, this mean you have the dev mode option enabled in the config for Core patcher.");
+            builder.AppendLine("Here are a couple tips to help you in your journey through core modding!");
+            builder.AppendLine();
+            builder.AppendLine("=== View your patches ===");
+            builder.AppendLine("1. Open ILSpy, DNSpy or your favorite program to view C# assembly IL/Code");
+            builder.AppendLine("2. Go in your tML installation folder");
+            builder.AppendLine("3. Drag and drop the tModLoader.patched.dll into ILSpy");
+            builder.AppendLine("4. Go to the method/class where you have done your patches.");
+            builder.AppendLine();
+            builder.AppendLine("=== Debugging your mod with tModLoader - core patcher (Require VS) ===");
+            builder.AppendLine("0. Stay on this screen");
+            builder.AppendLine("1. In VS with your mod project opened go in the Debugging tabs and click on \"Attach to process\" (or press CTRL+ALT+P)");
+            builder.AppendLine("2. In the process list, find a dotnet.exe process with tmodloader as the title.");
+            builder.AppendLine("3. Click on attach and it's done!");
+            builder.AppendLine();
+            builder.AppendLine("Thanks for using core patcher!");
+            return builder.ToString();
+        }
+
+        private static void DelegateToInject()
+        {
+            Interface.infoMessage.Show("This is a test message", Main.menuMode);
+        }
+
+        private static void EditStaticFieldString(FieldDefinition definition)
+        {
+            MethodDefinition staticConstructor = definition.DeclaringType.Methods.FirstOrDefault(m => m.Name == ".cctor");
+
+            if (staticConstructor != null)
+            {
+                ILProcessor processor = staticConstructor.Body.GetILProcessor();
+
+                IList<Instruction> instructions = new List<Instruction>();
+                instructions.Add(processor.Create(OpCodes.Ldc_I4, 0));
+                instructions.Add(processor.Create(OpCodes.Stsfld, definition));
+                foreach (Instruction instruction in instructions)
+                {
+                    processor.Body.Instructions.Insert(processor.Body.Instructions.Count - 2, instruction);
+                }
+            }
+        }
+        /*
     }
 
     [PatchType("Terraria.Main")]
@@ -234,13 +336,12 @@ namespace CorePatcher
                 }
             }
         }
-
-        // Lazy way to do thing 
+        /*
         private static void AddDetectionField(TypeDefinition type, AssemblyDefinition terraria)
         {
             FieldDefinition definition =
-                new FieldDefinition("CorePatched", FieldAttributes.Public | FieldAttributes.Static, type.Module.TypeSystem.Boolean);
+                new FieldDefinition("CorePatched", FieldAttributes.Public | FieldAttributes.Static, type.Module.TypeSystem.Boolean);
             type.Fields.Add(definition);
-        }
+        }*/
     }
 }

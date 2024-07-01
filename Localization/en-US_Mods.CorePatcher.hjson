@@ -13,4 +13,24 @@ Configs: {
 			Tooltip: ""
 		}
 	}
+
+	CorePatcherConfig: {
+		DisplayName: Core Patcher Config
+		Headers.Patch: Patch Header
+
+		EnableExamplePatch: {
+			Label: Enable Example Patch
+			Tooltip: ""
+		}
+
+		ReloadUponPatching: {
+			Label: Reload Upon Patching
+			Tooltip: ""
+		}
+
+		DevMode: {
+			Label: Dev Mode
+			Tooltip: ""
+		}
+	}
 }

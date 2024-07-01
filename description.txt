@@ -32,6 +32,11 @@ v.1.1
 v.1.2
 - Allow dependency injection
 
+v.1.2.1
+- Added dev mode config
+- Added a message when loading a core patched instance of tml while dev mode is enabled
+
 Features to come:
+- Make it possible to load patch from external DLL
 - Server executable patching
 - Make it self removable once the game is closed

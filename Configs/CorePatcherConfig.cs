@@ -8,7 +8,7 @@ using Terraria.ModLoader.Config;
 
 namespace CorePatcher.Configs
 {
-    public class ExamplePatchConfig : ModConfig
+    public class CorePatcherConfig : ModConfig
     {
         public override ConfigScope Mode => ConfigScope.ServerSide;
 
@@ -24,5 +24,12 @@ namespace CorePatcher.Configs
         [DefaultValue(true)]
         [ReloadRequired]
         public bool ReloadUponPatching;
+
+        /// <summary>
+        /// Mainly for developper, will prompt a message on start up
+        /// </summary>
+        [DefaultValue(false)]
+        [ReloadRequired]
+        public bool DevMode;
     }
 }

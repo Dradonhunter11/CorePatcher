@@ -3,11 +3,20 @@
   <Import Project="..\tModLoader.targets" />
   <PropertyGroup>
     <AssemblyName>CorePatcher</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Krafs.Publicizer" Version="2.2.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="tModLoader.CodeAssist" Version="0.1.*" />
   </ItemGroup>
+	<ItemGroup>
+		<Publicize Include="tModLoader:Terraria.ModLoader.UI.Interface" />
+		<Publicize Include="tModLoader:Terraria.ModLoader.UI.Interface.infoMessage" />
+		<Publicize Include="tModLoader:Terraria.ModLoader.UI.UIInfoMessage.Show" />
+	</ItemGroup>
 </Project>

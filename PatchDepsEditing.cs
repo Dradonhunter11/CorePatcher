@@ -53,7 +53,7 @@ namespace CorePatcher
             {
                 // jsonObject["targets"][".NETCoreApp,Version=v6.0"]["tModLoader/1.4.4.9"]["runtime"].AddAfterSelf(new JProperty("tModLoader.patched.dll", ""));
                 var target = jsonObject["targets"];
-                var netcoreapp = target[".NETCoreApp,Version=v6.0"];
+                var netcoreapp = target[".NETCoreApp,Version=v8.0"];
                 var tmodloader1449 = netcoreapp["tModLoader/1.4.4.9"];
                 var runtime = (JObject)tmodloader1449["runtime"];
                 var libraries = jsonObject["libraries"];

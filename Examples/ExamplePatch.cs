@@ -20,7 +20,7 @@ namespace CorePatcher.Exemples
         /// <param name="terraria"></param>
         private static void PatchTitle(TypeDefinition type, AssemblyDefinition terraria)
         {
-            if (!ModContent.GetInstance<ExamplePatchConfig>().EnableExamplePatch)
+            if (!ModContent.GetInstance<CorePatcherConfig>().EnableExamplePatch)
             {
                 return;
             }
@@ -51,7 +51,7 @@ namespace CorePatcher.Exemples
         /// <param name="terraria"></param>
         private static void InjectField(TypeDefinition type, AssemblyDefinition terraria)
         {
-            if (!ModContent.GetInstance<ExamplePatchConfig>().EnableExamplePatch)
+            if (!ModContent.GetInstance<CorePatcherConfig>().EnableExamplePatch)
             {
                 return;
             }
