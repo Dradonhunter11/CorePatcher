@@ -8,7 +8,7 @@ using CorePatcher.Configs;
 using CorePatcher.Examples;
 using Terraria.ModLoader;
 
-namespace CorePatcher.Exemples
+namespace CorePatcher.Examples
 {
     [PatchType("Terraria.Main")]
     internal class ExamplePatch : ModCorePatch
@@ -38,9 +38,9 @@ namespace CorePatcher.Exemples
                 i => i.MatchCall(out _),
                 i => i.MatchLdarg0());
 
-            // And finally we emit the following instruction this._cachedTitle = "Terraria Exemple Core modding!"
+            // And finally we emit the following instruction this._cachedTitle = "Terraria Example Core modding!"
             ilCursor.EmitLdarg0();
-            ilCursor.Emit(OpCodes.Ldstr, "Terraria Exemple Core modding!");
+            ilCursor.Emit(OpCodes.Ldstr, "Terraria Example Core modding!");
             ilCursor.EmitStfld(type.Fields.FirstOrDefault(f => f.Name == "_cachedTitle"));
         }
 
